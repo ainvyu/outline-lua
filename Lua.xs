@@ -116,16 +116,13 @@ void lua_push_perl_var(lua_Object *self, SV *var) {
 
   /* Now we know it's none of those we can do normal magic. */
   switch (SvTYPE(var)) {
-    case SVt_RV:
-      lua_push_perl_ref(self, SvRV(var));
-      return;
-    case SVt_IV: 
+    case SVt_IV:
       lua_pushnumber(L, (lua_Number)SvIV(var));
       return;
     case SVt_NV:
       lua_pushnumber(L, (lua_Number)SvNV(var));
       return;
-    case SVt_PV: case SVt_PVIV: 
+    case SVt_PV: case SVt_PVIV:
     case SVt_PVNV: case SVt_PVMG:
     {
       STRLEN len;
@@ -145,7 +142,7 @@ void lua_push_perl_array(lua_Object *self, AV *arr) {
   for (i = 0; i <= av_len(arr); i++) {
     SV **ptr = av_fetch(arr, i, FALSE);
     lua_pushnumber(L, (lua_Number)i+1);
-    if (ptr) 
+    if (ptr)
 	    lua_push_perl_var(self, *ptr);
     else
 	    lua_pushnil(L);
@@ -156,7 +153,7 @@ void lua_push_perl_array(lua_Object *self, AV *arr) {
 void lua_push_perl_hash(lua_Object *self, HV *hash) {
   lua_State *L = self->L;
   register HE* he;
-  
+
   lua_newtable(L);
   hv_iterinit(hash);
 
@@ -236,7 +233,7 @@ static int run_perl_func (lua_State *L) {
 
   dSP;
 
-  /* Don't need to know 
+  /* Don't need to know
    * a) the number of args we expect or
    * b) the number of return values
    * since Lua provisions for variable both, like Perl does.
@@ -252,17 +249,17 @@ static int run_perl_func (lua_State *L) {
   flags = strtoflags(context);
 
 
-  if (lua_gettop(L) == 0) 
+  if (lua_gettop(L) == 0)
     flags |= G_NOARGS;
 
-  if (flags & G_VOID) 
+  if (flags & G_VOID)
     flags |= G_DISCARD;
 
   ENTER;
   SAVETMPS;
 
   PUSHMARK(SP);
-  /* Convert the Lua stack into a Perl stack. 
+  /* Convert the Lua stack into a Perl stack.
    * The magic happens in perl_from_lua_val.
    */
 
@@ -291,7 +288,7 @@ static int run_perl_func (lua_State *L) {
     SvREFCNT_inc(val);
     lua_push_perl_var(self, val);
   }
-  
+
   sp -= num_ret;
 
   PUTBACK;
@@ -341,7 +338,7 @@ _run(self, code)
     int error;
     STRLEN code_length;
     char *codestr;
-    
+
   CODE:
     # TODO
     #
@@ -368,7 +365,7 @@ _run(self, code)
   OUTPUT:
     RETVAL
 
-void 
+void
 _add_func(self, lua_name, func_params_ref)
   Outline::Lua self;
   SV *lua_name;
@@ -395,7 +392,7 @@ _add_func(self, lua_name, func_params_ref)
     # This line should force it to stick around until the closure is called.
     SvREFCNT_inc(func_params_ref);
 
-    # I wonder whether simply doing this will invalidate the previous step 
+    # I wonder whether simply doing this will invalidate the previous step
     av_push(self->dec_these_refs, func_params_ref);
 
     lua_pushlightuserdata(self->L, self);
@@ -404,7 +401,7 @@ _add_func(self, lua_name, func_params_ref)
     lua_pushcclosure(self->L, &run_perl_func, 3);
     lua_setglobal(self->L, lua_name_str);
 
-void 
+void
 _add_var(self, lua_name, perl_var)
   Outline::Lua self;
   SV *lua_name;
